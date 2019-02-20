@@ -168,13 +168,13 @@ class BatchLoader:
         assert distribution.shape[-1] == self.vocab_size
         ix = np.random.choice(range(self.vocab_size), p=distribution.ravel())
         return self.idx_to_word[ix]
-    
+
     def likely_word_from_distribution(self, distribution):
         # get the word which has max probability from the given distribution
         assert distribution.shape[-1] == self.vocab_size
         ix = np.argmax(distribution.ravel())
         return self.idx_to_word[ix]
-    
+
     def embed_batch(self, batch):
         # convert the given batch of sentences to its embedding format
         # input => list of sentences => [batch_size]
@@ -213,6 +213,10 @@ class BatchLoader:
         max_seq_len = np.max([len(s) for s in sentences]) + 1
         target_idx = [[self.get_idx_by_word(w) for w in s] + [self.get_idx_by_word(self.end_label)] * (max_seq_len - len(s)) for s in sentences]
         return Variable(torch.from_numpy(np.array(target_idx, dtype=np.int64))).long()
+
+    def get_raw_input_from_sentences(self, sentences):
+        sentences = [process_sentence(sentence).split() for sentence in sentences]
+        return Variable(torch.from_numpy(self.embed_batch(sentences))).float()
 
     def input_from_sentences(self, sentences):
         # sentences is a list of original and paraphrase sentences => [[original_sentences], [paraphrase_sentences]]

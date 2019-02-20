@@ -74,7 +74,7 @@ class Paraphraser(nn.Module):
             target = target.view(-1)
 
             cross_entropy_loss = F.cross_entropy(logits, target)
-            
+
             # total loss is weighted reconstruction loss + weighted kl divergence loss
             loss = self.params.cross_entropy_penalty_weight * cross_entropy_loss + self.params.get_kld_coef(i) * kld
 
@@ -134,3 +134,47 @@ class Paraphraser(nn.Module):
 
             return cross_entropy_loss, kld, (sampled, s1, s2)
         return validate
+
+    def sample_with_input(self, batch_loader, seq_len, use_mean, input):
+        [encoder_input_source, encoder_input_target, decoder_input_source, _, _] = input
+
+        encoder_input = [encoder_input_source, encoder_input_target]
+
+        [batch_size, _, _] = encoder_input[0].size()
+
+        mu, logvar = self.encoder(encoder_input[0], encoder_input[1])
+        std = torch.exp(0.5 * logvar)
+
+        if use_mean:
+            z = mu
+        else:
+            z = Variable(torch.randn([batch_size, self.params.lantent_variable_size])).to(self.device)
+            z = z * std + mu
+
+        initial_state = self.decoder.build_initial_state(decoder_input_source)
+
+        # initial input token to the decoder is the go label
+        decoder_input = batch_loader.get_raw_input_from_sentences([batch_loader.go_label])
+
+        result = ''
+        # run for seq len steps
+        for i in range(seq_len):
+            decoder_input = decoder_input.to(self.device)
+
+            logits, initial_state = self.decoder(None, decoder_input, z, 0.0, initial_state)
+            logits = logits.view(-1, self.params.vocab_size)
+
+            prediction = F.softmax(logits, dim=-1)
+            word = batch_loader.likely_word_from_distribution(prediction.data.cpu().numpy()[-1])
+
+            if word == batch_loader.end_label:
+                break
+            result += ' ' + word
+
+            decoder_input = batch_loader.get_raw_input_from_sentences([word])
+        return result
+
+    def sample_with_pair(self, batch_loader, seq_len, source_sent, target_sent):
+        input = batch_loader.input_from_sentences([[source_sent], [target_sent]]).to(self.device)
+
+        return self.sample_with_input(batch_loader, seq_len, False, input)
