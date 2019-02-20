@@ -34,7 +34,7 @@ class Encoder(nn.Module):
         # after encoding the source sentence, the state can be used to encode the paraphrase
         state = None
         for i, input in enumerate([input_source, input_target]):
-            # apply highway and rnn to source and target
+            # apply highway and rnn to source(original sentence) and target(paraphrase sentence)
             [batch_size, seq_len, embedding_size] = input.size()
 
             input = input.view(-1, embedding_size)
