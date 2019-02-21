@@ -5,11 +5,11 @@ import math
 
 
 class Parameters:
-    def __init__(self, max_seq_len, vocab_size):
+    def __init__(self, max_seq_len, vocab_size, embedding_size):
         self.max_seq_len = int(max_seq_len) + 1     # go or eos token
 
         self.vocab_size = int(vocab_size)
-        self.word_embed_size = 100
+        self.word_embed_size = embedding_size
 
         self.encoder_rnn_size = 600
         self.encoder_num_layers = 1
