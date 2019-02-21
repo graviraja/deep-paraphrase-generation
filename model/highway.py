@@ -13,6 +13,7 @@ class Highway(nn.Module):
         self.nonlinear = nn.ModuleList([nn.Linear(size, size) for _ in range(num_layers)])
         self.linear = nn.ModuleList([nn.Linear(size, size) for _ in range(num_layers)])
         self.gate = nn.ModuleList([nn.Linear(size, size) for _ in range(num_layers)])
+        self.f = f
 
     def forward(self, x):
         """

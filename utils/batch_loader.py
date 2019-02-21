@@ -115,6 +115,8 @@ class BatchLoader:
         # consider the top vocab size from all the words
         # word_to_idx, idx_to word contains only top vocab_size words
         word_counts = collections.Counter(words)
+        if self.vocab_size > len(word_counts):
+            self.vocab_size = len(word_counts)
         self.idx_to_word = [x[0] for x in word_counts.most_common(self.vocab_size - 2)] + [self.unk_label] + [self.end_label]
         self.word_to_idx = {self.idx_to_word[i]: i for i in range(self.vocab_size)}
 
@@ -140,7 +142,7 @@ class BatchLoader:
         self.build_input_vocab(sentences)
         self.build_output_vocab(sentences)
 
-    def get_word_by_index(self, idx):
+    def get_word_by_idx(self, idx):
         # get the word for the given index
         return self.idx_to_word[idx]
 
@@ -188,8 +190,8 @@ class BatchLoader:
                     continue
                 if batch[i][j] in self.word_vec.keys():
                     embed[i, j, :] = self.word_vec[batch[i][j]]
-                else:
-                    embed[i, j, :] = self.word_vec['null']
+                # else:
+                #     embed[i, j, :] = self.word_vec['null']
         return embed
 
     def get_encoder_input(self, sentences):

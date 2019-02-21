@@ -21,7 +21,7 @@ class Decoder(nn.Module):
             bidirectional=True)
 
         self.decoding_rnn = nn.LSTM(
-            input_size=self.params.lantent_variable_size + self.params.word_embed_size,
+            input_size=self.params.latent_variable_size + self.params.word_embed_size,
             hidden_size=self.params.decoder_rnn_size,
             num_layers=self.params.decoder_num_layers,
             batch_first=True)
@@ -75,7 +75,7 @@ class Decoder(nn.Module):
         [batch_size, seq_len, _] = decoder_input.size()
 
         # replicate the z for seq_len
-        z = torch.cat([z] * seq_len, 1).view(batch_size, seq_len, self.params.lantent_variable_size)
+        z = torch.cat([z] * seq_len, 1).view(batch_size, seq_len, self.params.latent_variable_size)
 
         # concatenate the latent variable with decoder input
         decoder_input = torch.cat([decoder_input, z], 2)
@@ -85,7 +85,7 @@ class Decoder(nn.Module):
 
         # run the output layer
         # rnn_out => [batch_size, seq_len, decoder_rnn_size]
-        rnn_out = rnn.contiguous().view(-1, self.params.decoder_rnn_size)
+        rnn_out = rnn_out.contiguous().view(-1, self.params.decoder_rnn_size)
         result = self.fc(rnn_out)
         result = result.view(batch_size, seq_len, self.params.vocab_size)
 

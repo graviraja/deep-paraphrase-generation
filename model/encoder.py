@@ -20,8 +20,7 @@ class Encoder(nn.Module):
                 hidden_size=self.params.encoder_rnn_size,
                 num_layers=self.params.encoder_num_layers,
                 batch_first=True,
-                bidirectional=True)
-        ] for i in range(2))
+                bidirectional=True) for i in range(2)])
 
         self.context_to_mu = nn.Linear(self.params.encoder_rnn_size * 4, self.params.latent_variable_size)
         self.context_to_logvar = nn.Linear(self.params.encoder_rnn_size * 4, self.params.latent_variable_size)

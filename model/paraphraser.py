@@ -43,7 +43,7 @@ class Paraphraser(nn.Module):
             z = z * std + mu
 
             # kl divergence loss
-            kld = (-0.5 * torch.sum(logvar - torch.pow(mu, 2) - torch.exp(logvar) + 1, 1)).mean().squeeze()
+            kld = (-0.5 * torch.sum(log_var - torch.pow(mu, 2) - torch.exp(log_var) + 1, 1)).mean().squeeze()
         else:
             kld = None
 
@@ -148,7 +148,7 @@ class Paraphraser(nn.Module):
         if use_mean:
             z = mu
         else:
-            z = Variable(torch.randn([batch_size, self.params.lantent_variable_size])).to(self.device)
+            z = Variable(torch.randn([batch_size, self.params.latent_variable_size])).to(self.device)
             z = z * std + mu
 
         initial_state = self.decoder.build_initial_state(decoder_input_source)
@@ -175,6 +175,7 @@ class Paraphraser(nn.Module):
         return result
 
     def sample_with_pair(self, batch_loader, seq_len, source_sent, target_sent):
-        input = batch_loader.input_from_sentences([[source_sent], [target_sent]]).to(self.device)
+        input = batch_loader.input_from_sentences([[source_sent], [target_sent]])
+        input = [var.to(self.device) for var in input]
 
         return self.sample_with_input(batch_loader, seq_len, False, input)
